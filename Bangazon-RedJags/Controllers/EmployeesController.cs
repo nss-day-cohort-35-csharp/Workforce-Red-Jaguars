@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bangazon_RedJags.Models;
+using Bangazon_RedJags.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -35,24 +36,27 @@ namespace Bangazon_RedJags.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT FirstName, LastName, DepartmentId FROM Employee";
+                    cmd.CommandText = @"SELECT e.FirstName, e.LastName, d.Name DepartmentName
+                                        FROM Employee e
+                                        LEFT JOIN Department d
+                                            ON e.DepartmentId = d.Id";
 
                     var reader = await cmd.ExecuteReaderAsync();
 
-                    var employees = new List<Employee>();
+                    var employees = new List<EmployeeViewModel>();
 
                     int FirstNameOrdinal = reader.GetOrdinal("FirstName");
                     int LastNameOrdinal = reader.GetOrdinal("LastName");
-                    int DepartmentIdOrdinal = reader.GetOrdinal("DepartmentId");
+                    int DepartmentNameOrdinal = reader.GetOrdinal("DepartmentName");
 
 
                     while (reader.Read())
                     {
-                        employees.Add(new Employee
+                        employees.Add(new EmployeeViewModel
                         {
                             FirstName = reader.GetString(FirstNameOrdinal),
                             LastName = reader.GetString(LastNameOrdinal),
-                            DepartmentId = reader.GetInt32(DepartmentIdOrdinal)
+                            DepartmentName = reader.GetString(DepartmentNameOrdinal)
                         });
                     }
                     reader.Close();
