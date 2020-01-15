@@ -15,6 +15,6 @@ namespace Bangazon_RedJags.Models.ViewModels
         public int Budget { get; set; }
 
         [Display(Name = "Number of Employees")]
-        public int EmployeeNumber { get; set; }
+        public int? EmployeeNumber { get; set; }
     }
 }
