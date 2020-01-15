@@ -15,7 +15,7 @@ namespace Bangazon_RedJags.Models
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Department budget is required")]
-        [StringLength(15, MinimumLength = 2, ErrorMessage = "Department Budget should be 2 and 15 characters")]
+        [Range(10, 99999999, ErrorMessage = "Budget should be between 10 and 99999999")]
         public int Budget { get; set; }
 
         

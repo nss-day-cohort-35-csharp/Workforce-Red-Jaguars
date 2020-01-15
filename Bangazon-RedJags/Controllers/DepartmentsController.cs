@@ -92,11 +92,24 @@ namespace Bangazon_RedJags.Controllers
         // POST: Departments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Department department)
         {
             try
             {
-                // TODO: Add insert logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO Department (Name, Budget) 
+                                            VALUES (@name, @budget)";
+
+                        cmd.Parameters.Add(new SqlParameter("@name", department.Name));
+                        cmd.Parameters.Add(new SqlParameter("@budget", department.Budget));
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
