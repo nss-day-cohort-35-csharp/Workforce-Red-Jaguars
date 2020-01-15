@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bangazon_RedJags.Models;
+using Bangazon_RedJags.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -41,7 +42,8 @@ namespace Bangazon_RedJags.Controllers
 
                     var reader = cmd.ExecuteReader();
 
-                    List<Department> departments = new List<Department>();
+                    List<DepartmentEmployeesCount> departments = new List<DepartmentEmployeesCount>();
+                    
 
                     while (reader.Read())
                     {
@@ -50,7 +52,7 @@ namespace Bangazon_RedJags.Controllers
 
                         if (departmentAlreadyAddedd == null)
                         {
-                            Department department = new Department
+                            DepartmentEmployeesCount department = new DepartmentEmployeesCount
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 Name = reader.GetString(reader.GetOrdinal("Name")),

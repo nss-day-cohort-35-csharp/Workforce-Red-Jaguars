@@ -18,7 +18,6 @@ namespace Bangazon_RedJags.Models
         [StringLength(15, MinimumLength = 2, ErrorMessage = "Department Budget should be 2 and 15 characters")]
         public int Budget { get; set; }
 
-        [Display(Name = "Number of Employees")]
-        public int EmployeeNumber { get; set; }
+        
     }
 }
