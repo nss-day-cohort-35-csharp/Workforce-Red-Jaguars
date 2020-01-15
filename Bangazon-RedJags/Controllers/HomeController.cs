@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using BangazoneWorkforce.Models;
+using Bangazon_RedJags.Models;
 
-namespace BangazoneWorkforce.Controllers
+namespace Bangazon_RedJags.Controllers
 {
     public class HomeController : Controller
     {

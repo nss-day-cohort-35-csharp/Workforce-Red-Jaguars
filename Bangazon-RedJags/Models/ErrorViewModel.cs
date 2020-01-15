@@ -1,6 +1,6 @@
 using System;
 
-namespace BangazoneWorkforce.Models
+namespace Bangazon_RedJags.Models
 {
     public class ErrorViewModel
     {
