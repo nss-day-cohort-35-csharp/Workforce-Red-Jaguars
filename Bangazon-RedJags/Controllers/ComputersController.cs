@@ -190,23 +190,97 @@ namespace Bangazon_RedJags.Controllers
         // GET: Computers/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Model FROM Computer                       
+                                        WHERE Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        var computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Model = reader.GetString(reader.GetOrdinal("Model")),
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        {
+                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                        }
+
+                        reader.Close();
+                        return View(computer);
+                    }
+
+                    return NotFound();
+                }
+            }
+
         }
 
         // POST: Computers/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public ActionResult Delete(int id, Computer computer)
         {
-            try
+            if (!IsComputerAssigned(id))
             {
-                // TODO: Add delete logic here
+                try
+                {
+                    using (SqlConnection conn = Connection)
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = @"DELETE FROM Computer WHERE Id = @id";
+                            cmd.Parameters.Add(new SqlParameter("@id", id));
 
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    return RedirectToAction(nameof(Index));
+
+                }
+                catch
+                {
+                   
+                    return NotFound();
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "We can't delete this computer because has been assigned to an employee";
                 return RedirectToAction(nameof(Index));
             }
-            catch
+        }
+    
+
+        private bool IsComputerAssigned(int id)
+        {
+            using (SqlConnection conn = Connection)
             {
-                return View();
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT FirstName 
+                        FROM Employee
+                        WHERE ComputerId = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    return reader.Read();
+                }
             }
         }
     }
