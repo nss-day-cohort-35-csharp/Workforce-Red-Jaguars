@@ -81,16 +81,23 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.Id.ToString()
             }).ToList();
 
-            /*var computers = GetComputers().Select(d => new SelectListItem
+            var isSupervisor = GetIsSupervisor().Select(d => new SelectListItem
+            {
+                Text = d.ToString(),
+                Value = d.ToString()
+            }).ToList();
+
+            var computers = GetComputers().Select(d => new SelectListItem
             {
                 Text = d.Name,
                 Value = d.Id.ToString()
-            }).ToList();*/
+            }).ToList();
 
             var viewModel = new EmployeeCreateModel
             {
                 Employee = new Employee(),
-                Departments = departments
+                Departments = departments,
+                IsSupervisor = isSupervisor
             };
 
             return View(viewModel);
@@ -115,7 +122,7 @@ namespace Bangazon_RedJags.Controllers
                         cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
                         cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
                         cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
-                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", false ));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
                         cmd.Parameters.Add(new SqlParameter("@computerId", 1 ));
 
                         cmd.ExecuteNonQuery();
@@ -209,41 +216,49 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
-        /*private List<Department> GetComputers()
+
+        private List<bool> GetIsSupervisor()
         {
-            using (SqlConnection conn = Connection)
+            var list = new List<bool>{ true, false };
+
+            return list;
+        }
+
+            /*private List<Department> GetComputers()
             {
-                conn.Open();
-                using (SqlCommand cmd = conn.CreateCommand())
+                using (SqlConnection conn = Connection)
                 {
-                    //INSERT INTO Computer(PurchaseDate,DecomissionDate,Make,Model)
-                    cmd.CommandText = @"SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
-                                        FROM Computer c
-                                        LEFT JOIN Employee e
-                                            ON c.Id = e.ComputerId
-                                        WHERE e.ComputerId is Null";
-
-                    var reader = cmd.ExecuteReader();
-
-                    var computers = new List<Computer>();
-
-                    while (reader.Read())
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
                     {
-                        computers.Add(new Computer
+                        //INSERT INTO Computer(PurchaseDate,DecomissionDate,Make,Model)
+                        cmd.CommandText = @"SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
+                                            FROM Computer c
+                                            LEFT JOIN Employee e
+                                                ON c.Id = e.ComputerId
+                                            WHERE e.ComputerId is Null";
+
+                        var reader = cmd.ExecuteReader();
+
+                        var computers = new List<Computer>();
+
+                        while (reader.Read())
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            DecomissionDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            Make = reader.GetString(reader.GetOrdinal("Make")),
-                            Model = reader.GetString(reader.GetOrdinal("Model"))
-                        }); ;
+                            computers.Add(new Computer
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                                DecomissionDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                                Make = reader.GetString(reader.GetOrdinal("Make")),
+                                Model = reader.GetString(reader.GetOrdinal("Model"))
+                            }); ;
+                        }
+
+                        return computers;
                     }
-
-                    return computers;
                 }
-            }
-        }*/
+            }*/
 
 
+        }
     }
-}

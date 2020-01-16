@@ -11,5 +11,7 @@ namespace Bangazon_RedJags.Models.ViewModels
         public Employee Employee { get; set; }
 
         public List<SelectListItem> Departments { get; set; }
+        public List<SelectListItem> IsSupervisor { get; set; }
+        public List<SelectListItem> Computers { get; set; }
     }
 }
