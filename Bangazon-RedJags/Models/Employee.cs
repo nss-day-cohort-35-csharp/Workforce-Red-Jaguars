@@ -7,7 +7,7 @@ namespace Bangazon_RedJags.Models
 {
     public class Employee
     {
-        [Required]
+        //[Required]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "First Name is required")]
@@ -19,17 +19,20 @@ namespace Bangazon_RedJags.Models
         public string LastName { get; set; }
 
         [Required(ErrorMessage = "Department Id is required")]
+        [Display(Name = "Department")]
         public int DepartmentId { get; set; }
 
-        [Required(ErrorMessage = "Employee eMail is required")]
+        //[Required(ErrorMessage = "Employee eMail is required")]
         [StringLength(55, MinimumLength = 5, ErrorMessage = "eMail length should be between 5 and 55 characters")]
         public string Email { get; set; }
-        
-        [Required]
+
+        //[Required]
+        [Display(Name = "Is supervisor")]
         public bool IsSupervisor { get; set; } = false;
 
-        [Required(ErrorMessage = "Computer Id is required")]
-        public int ComputerId { get; set; }
+        //[Required(ErrorMessage = "Computer Id is required")]
+        [Display(Name = "Computer")]
+        public int ComputerId { get; set; } = -1;
 
         //public Computer? Computer { get; set; }
 
