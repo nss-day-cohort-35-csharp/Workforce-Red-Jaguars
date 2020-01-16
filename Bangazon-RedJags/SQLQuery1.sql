@@ -2,3 +2,6 @@
 FROM Computer c
 LEFT JOIN Employee e
 ON c.Id = e.ComputerId;
+
+SELECT Id, PurchaseDate, DecomissionDate, Make, Model FROM Computer
+WHERE Make LIKE '' OR Model LIKE '%news%';
