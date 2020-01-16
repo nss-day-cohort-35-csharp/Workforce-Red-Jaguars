@@ -1,0 +1,67 @@
+﻿@model Bangazon_RedJags.Models.ViewModels.EmployeeCreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Employee</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @*<div class="form-group">
+                <label asp-for="Id" class="control-label"></label>
+                <input asp-for="Id" class="form-control" />
+                <span asp-validation-for="Id" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <label asp-for="Employee.FirstName" class="control-label"></label>
+                <input asp-for="Employee.FirstName" class="form-control" />
+                <span asp-validation-for="Employee.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Employee.LastName" class="control-label"></label>
+                <input asp-for="Employee.LastName" class="form-control" />
+                <span asp-validation-for="Employee.LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Employee.DepartmentId" class="control-label"></label>
+                @*<input asp-for="DepartmentId" class="form-control" />*@
+                <select asp-for="Employee.DepartmentId" asp-items="@Model.Departments"></select>
+                @*<span asp-validation-for="DepartmentId" class="text-danger"></span>*@
+            </div>
+            <div class="form-group">
+                <label asp-for="Employee.Email" class="control-label"></label>
+                <input asp-for="Employee.Email" class="form-control" />
+                <span asp-validation-for="Employee.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Employee.IsSupervisor" class="control-label"></label>
+                @*<label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsSupervisor" /> @Html.DisplayNameFor(model => model.IsSupervisor)
+                </label>*@
+                <select asp-for="Employee.IsSupervisor" asp-items="@Model.IsSupervisor"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Employee.ComputerId" class="control-label"></label>
+                @*<input asp-for="Employee.ComputerId" class="form-control" />*@
+                <select asp-for="Employee.ComputerId" asp-items="@Model.Computers"></select>
+                @*<span asp-validation-for="Employee.ComputerId" class="text-danger"></span>*@
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
