@@ -220,46 +220,51 @@ namespace Bangazon_RedJags.Controllers
 
         private List<bool> GetIsSupervisor()
         {
-            var list = new List<bool>{ true, false };
+            var list = new List<bool> { true, false };
 
             return list;
         }
 
-            private List<Computer> GetComputers()
+        private List<Computer> GetComputers()
+        {
+            using (SqlConnection conn = Connection)
             {
-                using (SqlConnection conn = Connection)
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    conn.Open();
-                    using (SqlCommand cmd = conn.CreateCommand())
-                    {
-                        //INSERT INTO Computer(PurchaseDate,DecomissionDate,Make,Model)
-                        cmd.CommandText = @"SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
+                    //INSERT INTO Computer(PurchaseDate,DecomissionDate,Make,Model)
+                    cmd.CommandText = @"SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
                                             FROM Computer c
                                             LEFT JOIN Employee e
                                                 ON c.Id = e.ComputerId
                                             WHERE e.ComputerId is Null";
 
-                        var reader = cmd.ExecuteReader();
+                    var reader = cmd.ExecuteReader();
 
-                        var computers = new List<Computer>();
+                    var computers = new List<Computer>();
 
-                        while (reader.Read())
+                    while (reader.Read())
+                    {
+                        var computer = new Computer
                         {
-                            computers.Add(new Computer
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                                PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                                DecomissionDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                                Make = reader.GetString(reader.GetOrdinal("Make")),
-                                Model = reader.GetString(reader.GetOrdinal("Model"))
-                            }); ;
-                        }
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            DecomissionDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Model = reader.GetString(reader.GetOrdinal("Model"))
+                        };
 
-                        return computers;
+                        if (computer.DecomissionDate == null)
+                        {
+                            computers.Add(computer);
+                        }
                     }
+
+                    return computers;
                 }
             }
-
-
         }
+
+
     }
+}
