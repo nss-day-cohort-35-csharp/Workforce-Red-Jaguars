@@ -69,12 +69,10 @@ namespace Bangazon_RedJags.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
-            var trainings = GetAllTrainingPrograms().Select(p => new TrainingSelect
+            var trainings = GetAllTrainingPrograms().Select(p => new SelectListItem
             {
-                Name = p.Name,
-                Id = p.Id,
-                Selected = true
-
+                Text = p.Name,
+                Value = p.Id.ToString()
             }).ToList();
 
             using (SqlConnection conn = Connection)
