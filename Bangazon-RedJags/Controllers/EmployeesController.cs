@@ -145,7 +145,7 @@ namespace Bangazon_RedJags.Controllers
 
             var computers = GetComputers(-1).Select(d => new SelectListItem
             {
-                Text = d.Make,
+                Text = d.Model,
                 Value = d.Id.ToString()
             }).ToList();
 
@@ -210,12 +210,6 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            var computers = GetComputers(id).Select(d => new SelectListItem
-            {
-                Text = d.Make,
-                Value = d.Id.ToString()
-            }).ToList();
-
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -243,6 +237,12 @@ namespace Bangazon_RedJags.Controllers
                         };
                         reader.Close();
 
+                        var computers = GetComputers(employee.ComputerId).Select(d => new SelectListItem
+                        {
+                            Text = d.Model,
+                            Value = d.Id.ToString()
+                        }).ToList();
+
                         var viewModel = new EmployeeCreateModel
                         {
                             Employee = employee,
@@ -250,6 +250,7 @@ namespace Bangazon_RedJags.Controllers
                             IsSupervisor = isSupervisor,
                             Computers = computers
                         };
+                        reader.Close();
                         return View(viewModel);
                     }
                     reader.Close();
@@ -387,7 +388,7 @@ namespace Bangazon_RedJags.Controllers
 
                     var computers = new List<Computer>();
 
-                    if(id != -1 )
+                    if( id > 0 )
                     {
                         computers.Add( GetComputer( id ) );
                     }
@@ -411,6 +412,7 @@ namespace Bangazon_RedJags.Controllers
                             computers.Add(computer);
                         }
                     }
+                    reader.Close();
 
                     return computers;
                 }
@@ -426,15 +428,18 @@ namespace Bangazon_RedJags.Controllers
                 {
                     cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Model
                                             FROM Computer
-                                            WHERE Id = id";
+                                            WHERE Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
 
                     var reader = cmd.ExecuteReader();
 
-                    Computer computer = new Computer();
+                    //Computer computer = new Computer();
 
-                    while (reader.Read())
-                    {
-                        computer = new Computer
+                    //while (reader.Read())
+                    //{
+                    reader.Read();
+                        Computer computer = new Computer
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
@@ -445,7 +450,7 @@ namespace Bangazon_RedJags.Controllers
                         {
                             computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
                         }
-                    }
+                    //}
                     reader.Close();
                     return computer;
                 }
