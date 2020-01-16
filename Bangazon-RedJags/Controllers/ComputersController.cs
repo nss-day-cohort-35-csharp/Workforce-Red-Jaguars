@@ -47,25 +47,31 @@ namespace Bangazon_RedJags.Controllers
 
                         if (computerAlreadyAddedd == null)
                         {
+                           
                             Computer computer = new Computer
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("Id")),
                                 PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                                DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate")),
                                 Make = reader.GetString(reader.GetOrdinal("Make")),
                                 Model = reader.GetString(reader.GetOrdinal("Model"))
+                                
 
                             };
+                            if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                            {
+                                computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                            }
 
                             computers.Add(computer);
 
 
                         }
 
-                        reader.Close();
+                        
                        
 
                     }
+                    reader.Close();
                     return View(computers);
                 }
             }
@@ -87,11 +93,29 @@ namespace Bangazon_RedJags.Controllers
         // POST: Computers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Computer computer)
         {
             try
             {
-                // TODO: Add insert logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+
+                        cmd.CommandText = @"INSERT INTO Computer (PurchaseDate, Make, Model)
+                                            VALUES (@PurchaseDate, @Make, @Model)";
+                        cmd.Parameters.Add(new SqlParameter("@PurchaseDate", DateTime.Now));
+                        cmd.Parameters.Add(new SqlParameter("@Make", computer.Make));
+                        cmd.Parameters.Add(new SqlParameter("@Model", computer.Model));
+
+                        cmd.ExecuteNonQuery();
+
+
+
+                    }
+                }
+
 
                 return RedirectToAction(nameof(Index));
             }
