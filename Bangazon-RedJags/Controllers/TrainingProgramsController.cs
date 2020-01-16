@@ -71,6 +71,87 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+        // GET: TrainingPrograms
+        public ActionResult IndexPastTraining()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @" SELECT tp.Id AS TrainingId, tp.[Name] AS TrainingName, tp.StartDate, tp.EndDate, tp.MaxAttendees, e.FirstName, e.LastName, e.Id AS EmployeeId
+                                        FROM TrainingProgram tp
+                                        LEFT JOIN EmployeeTraining et ON et.TrainingProgramId = tp.Id
+                                        LEFT JOIN Employee e ON et.EmployeeId = e.Id
+                                        WHERE EndDate < @today";
+                    //
+                    cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    
+
+                    List<TrainingWithEmployees> trainingPrograms = new List<TrainingWithEmployees>();
+
+                    int IdOrdinal = reader.GetOrdinal("TrainingId");
+                    int NameOrdinal = reader.GetOrdinal("TrainingName");
+                    int StartDateOrdinal = reader.GetOrdinal("StartDate");
+                    int EndDateOrdinal = reader.GetOrdinal("EndDate");
+                    int MaxAttendeesOrdinal = reader.GetOrdinal("MaxAttendees");
+
+                    while (reader.Read())
+                    {
+                        var trainingId = reader.GetInt32(reader.GetOrdinal("TrainingId"));
+                        var trainingAlreadyAdded = trainingPrograms.FirstOrDefault(d => d.Id == trainingId);
+
+                        if (trainingAlreadyAdded == null)
+                        {
+
+                            TrainingWithEmployees trainingProgram = new TrainingWithEmployees
+                            {
+                                Id = reader.GetInt32(IdOrdinal),
+                                Name = reader.GetString(NameOrdinal),
+                                StartDate = reader.GetDateTime(StartDateOrdinal),
+                                EndDate = reader.GetDateTime(EndDateOrdinal),
+                                MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
+                            };
+
+                            trainingPrograms.Add(trainingProgram);
+
+                            var hasEmployee = !reader.IsDBNull(reader.GetOrdinal("EmployeeId"));
+
+                            if (hasEmployee)
+                            {
+                                trainingProgram.EmployeesAttending.Add(new BasicEmployee()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                });
+                            }
+                        }
+                        else
+                        {
+                            var hasEmployee = !reader.IsDBNull(reader.GetOrdinal("EmployeeId"));
+
+                            if (hasEmployee)
+                            {
+                                trainingAlreadyAdded.EmployeesAttending.Add(new BasicEmployee()
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("EmployeeId")),
+                                    FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                    LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                });
+                            }
+                        }
+                        
+                    }
+                    reader.Close();
+
+                    return View(trainingPrograms);
+                }
+            }
+        }
+
         // GET: TrainingPrograms/Details/5
         public ActionResult Details(int id)
         {

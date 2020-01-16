@@ -29,7 +29,7 @@ namespace Bangazon_RedJags.Models.ViewModels
         [Display(Name = "Max Attendees")]
         [Required(ErrorMessage = "Maximum Number of Attendees is required for Training Program")]
         public int MaxAttendees { get; set; }
-
+        [Display(Name = "Registered Employees")]
         public List<BasicEmployee> EmployeesAttending { get; set; } = new List<BasicEmployee>();
 
         public BasicEmployee BasicEmployee { get; set; }

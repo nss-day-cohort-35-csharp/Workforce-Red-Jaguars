@@ -31,6 +31,7 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.MaxAttendees)
         </dd>
+        
     </dl>
 
 </div>
@@ -42,11 +43,9 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.BasicEmployee.FirstName)
+                @Html.DisplayNameFor(model => model.BasicEmployee.FullName) 
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BasicEmployee.LastName)
-            </th>
+           
 
 
         </tr>
@@ -56,11 +55,9 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.FirstName)
+                    @Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.LastName)
-                </td>
+               
 
                 @*<td>
                         @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
