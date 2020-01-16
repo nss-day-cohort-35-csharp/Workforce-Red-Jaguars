@@ -87,11 +87,11 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            var computers = GetComputers().Select(d => new SelectListItem
+            /*var computers = GetComputers().Select(d => new SelectListItem
             {
                 Text = d.Name,
                 Value = d.Id.ToString()
-            }).ToList();
+            }).ToList();*/
 
             var viewModel = new EmployeeCreateModel
             {
