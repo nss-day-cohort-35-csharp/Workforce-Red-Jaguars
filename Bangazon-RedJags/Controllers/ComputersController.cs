@@ -258,7 +258,7 @@ namespace Bangazon_RedJags.Controllers
             }
             else
             {
-                ViewBag.ErrorMessage1 = "We can't delete this computer because assigned to an employee";
+                TempData["ErrorMessage"] = "We can't delete this computer because has been assigned to an employee";
                 return RedirectToAction(nameof(Index));
             }
         }

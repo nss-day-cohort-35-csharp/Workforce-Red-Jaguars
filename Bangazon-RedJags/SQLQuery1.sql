@@ -1,6 +1,4 @@
-﻿SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
+﻿SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model, e.FirstName, e.LastName
 FROM Computer c
 LEFT JOIN Employee e
-ON c.Id = e.ComputerId
-WHERE c.Id = 10
-HAVING e.ComputerId is Null
+ON c.Id = e.ComputerId;
