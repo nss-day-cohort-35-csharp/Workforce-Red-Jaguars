@@ -38,18 +38,19 @@
                 <input asp-for="Employee.Email" class="form-control" />
                 <span asp-validation-for="Employee.Email" class="text-danger"></span>
             </div>
-            <div class="form-group form-check">
+            <div class="form-group">
                 <label asp-for="Employee.IsSupervisor" class="control-label"></label>
                 @*<label class="form-check-label">
                     <input class="form-check-input" asp-for="IsSupervisor" /> @Html.DisplayNameFor(model => model.IsSupervisor)
                 </label>*@
                 <select asp-for="Employee.IsSupervisor" asp-items="@Model.IsSupervisor"></select>
             </div>
-            @*<div class="form-group">
-                <label asp-for="ComputerId" class="control-label"></label>
-                <input asp-for="ComputerId" class="form-control" />
-                <span asp-validation-for="ComputerId" class="text-danger"></span>
-            </div>*@
+            <div class="form-group">
+                <label asp-for="Employee.ComputerId" class="control-label"></label>
+                @*<input asp-for="Employee.ComputerId" class="form-control" />*@
+                <select asp-for="Employee.ComputerId" asp-items="@Model.Computers"></select>
+                @*<span asp-validation-for="Employee.ComputerId" class="text-danger"></span>*@
+            </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>

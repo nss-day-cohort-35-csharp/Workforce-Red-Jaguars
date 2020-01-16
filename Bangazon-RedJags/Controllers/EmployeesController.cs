@@ -87,17 +87,18 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            /*var computers = GetComputers().Select(d => new SelectListItem
+            var computers = GetComputers().Select(d => new SelectListItem
             {
-                Text = d.Name,
+                Text = d.Make,
                 Value = d.Id.ToString()
-            }).ToList();*/
+            }).ToList();
 
             var viewModel = new EmployeeCreateModel
             {
                 Employee = new Employee(),
                 Departments = departments,
-                IsSupervisor = isSupervisor
+                IsSupervisor = isSupervisor,
+                Computers = computers
             };
 
             return View(viewModel);
@@ -123,7 +124,7 @@ namespace Bangazon_RedJags.Controllers
                         cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
                         cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
                         cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
-                        cmd.Parameters.Add(new SqlParameter("@computerId", 1 ));
+                        cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
 
                         cmd.ExecuteNonQuery();
                     }
@@ -224,7 +225,7 @@ namespace Bangazon_RedJags.Controllers
             return list;
         }
 
-            /*private List<Department> GetComputers()
+            private List<Computer> GetComputers()
             {
                 using (SqlConnection conn = Connection)
                 {
@@ -257,7 +258,7 @@ namespace Bangazon_RedJags.Controllers
                         return computers;
                     }
                 }
-            }*/
+            }
 
 
         }
