@@ -58,7 +58,15 @@
             </tr>
         }
 </table>
+
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <p>Edit Training Programs</p>
+    <div class="form-group">
+
+        <select multiple asp-for="@Model.EmployeeTrainings" asp-items="@Model.TrainingList"></select>
+    </div>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new {  id = Model.Id  }) |
     <a asp-action="Index">Back to List</a>
 </div>
