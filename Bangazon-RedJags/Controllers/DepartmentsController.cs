@@ -80,7 +80,61 @@ namespace Bangazon_RedJags.Controllers
         // GET: Departments/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT d.Name, d.Budget, d.Id, e.firstName, e.lastName, e.Id as EmployeeId
+                                        FROM Department d
+                                        LEFT JOIN Employee e ON e.DepartmentId = d.Id
+                                        WHERE d.Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+
+                    Department department = null;
+
+                    while (reader.Read())
+                    {
+                        if (department == null)
+                        {
+                            department = new Department
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
+
+                            };
+                        }
+
+                        var hasEmployee = !reader.IsDBNull(reader.GetOrdinal("EmployeeId"));
+
+                        if (hasEmployee)
+                        {
+                            var firstname = reader.GetString(reader.GetOrdinal("FirstName"));
+                            var lastname =  reader.GetString(reader.GetOrdinal("LastName"));
+                            department.Employees.Add(new BasicEmployee
+                            {
+                              FullName = ($"{firstname} {lastname}")
+                                
+                            });
+                        }
+
+
+
+                    }
+
+                    if (department == null)
+                    {
+                        return NotFound();
+                    }
+                    reader.Close();
+                    return View(department);
+
+                }
+            }
+            
         }
 
         // GET: Departments/Create

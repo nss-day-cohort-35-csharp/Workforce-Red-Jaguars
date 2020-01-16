@@ -18,6 +18,8 @@ namespace Bangazon_RedJags.Models
         [Range(10, 99999999, ErrorMessage = "Budget should be between 10 and 99999999")]
         public int Budget { get; set; }
 
-        
+        public List<BasicEmployee > Employees { get; set; } = new List<BasicEmployee>();
+
+        public BasicEmployee BasicEmployee { get; set; }
     }
 }
