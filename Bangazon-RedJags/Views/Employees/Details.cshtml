@@ -1,0 +1,64 @@
+﻿@model Bangazon_RedJags.Models.BasicEmployee
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+    <h1> @Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h1>
+
+<div>
+    <h4>Employee Details</h4>
+    <hr />
+    <dl class="row">
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.FirstName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.LastName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+       
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DepartmentName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DepartmentName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Computer)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Computer)
+        </dd>
+    </dl>
+</div>
+<h4>Employee Training</h4>
+<table class="table">
+    
+    <tbody>
+        @foreach (var item in Model.EmployeeTrainings)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item) 
+                </td>
+
+
+                @*<td>
+                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                    </td>*@
+            </tr>
+        }
+</table>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Back to List</a>
+</div>

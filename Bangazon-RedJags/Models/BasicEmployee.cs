@@ -17,5 +17,14 @@ namespace Bangazon_RedJags.Models
         [Display(Name = "Full Name")]
         public string FullName { get; set; }
 
+        [Display(Name = "Department Name")]
+
+        public string DepartmentName { get; set; }
+
+        [Display(Name = "Computer Name")]
+
+        public string Computer { get; set; }
+
+        public List<String> EmployeeTrainings { get; set; } = new List<String>();
     }
 }
