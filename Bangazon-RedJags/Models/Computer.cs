@@ -14,7 +14,7 @@ namespace Bangazon_RedJags.Models
         [DataType(DataType.DateTime)]
         public DateTime PurchaseDate { get; set; }
 
-        public DateTime? DecomissionDate { get; set; }
+        public DateTime? DecomissionDate { get; set; } = null;
 
         [Required(ErrorMessage = "Computer Manufacturer is required")]
         [Display(Name = "Manufacturer")]
