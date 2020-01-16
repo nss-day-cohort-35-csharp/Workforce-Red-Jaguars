@@ -37,7 +37,7 @@ namespace Bangazon_RedJags.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"SELECT e.FirstName, e.LastName, d.Name DepartmentName
+                    cmd.CommandText = @"SELECT e.Id, e.FirstName, e.LastName, d.Name DepartmentName
                                         FROM Employee e
                                         LEFT JOIN Department d
                                             ON e.DepartmentId = d.Id";
@@ -46,6 +46,7 @@ namespace Bangazon_RedJags.Controllers
 
                     var employees = new List<EmployeeViewModel>();
 
+                    int EmployeeIdOrdinal = reader.GetOrdinal("Id");
                     int FirstNameOrdinal = reader.GetOrdinal("FirstName");
                     int LastNameOrdinal = reader.GetOrdinal("LastName");
                     int DepartmentNameOrdinal = reader.GetOrdinal("DepartmentName");
@@ -55,6 +56,7 @@ namespace Bangazon_RedJags.Controllers
                     {
                         employees.Add(new EmployeeViewModel
                         {
+                            Id = reader.GetInt32(EmployeeIdOrdinal),
                             FirstName = reader.GetString(FirstNameOrdinal),
                             LastName = reader.GetString(LastNameOrdinal),
                             DepartmentName = reader.GetString(DepartmentNameOrdinal)
@@ -141,9 +143,9 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            var computers = GetComputers().Select(d => new SelectListItem
+            var computers = GetComputers(-1).Select(d => new SelectListItem
             {
-                Text = d.Make,
+                Text = d.Model,
                 Value = d.Id.ToString()
             }).ToList();
 
@@ -196,23 +198,112 @@ namespace Bangazon_RedJags.Controllers
         // GET: Employees/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var department = GetDepartments().Select(d => new SelectListItem
+            {
+                Text = d.Name,
+                Value = d.Id.ToString()
+            }).ToList();
+
+            var isSupervisor = GetIsSupervisor().Select(d => new SelectListItem
+            {
+                Text = d.ToString(),
+                Value = d.ToString()
+            }).ToList();
+
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, FirstName, LastName, DepartmentId, Email, IsSupervisor, ComputerId
+                                        FROM Employee
+                                        WHERE Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        var employee = new Employee
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            DepartmentId = reader.GetInt32(reader.GetOrdinal("DepartmentId")),
+                            Email = reader.GetString(reader.GetOrdinal("Email")),
+                            IsSupervisor = reader.GetBoolean(reader.GetOrdinal("IsSupervisor")),
+                            ComputerId = reader.GetInt32(reader.GetOrdinal("ComputerId"))
+                        };
+                        reader.Close();
+
+                        var computers = GetComputers(employee.ComputerId).Select(d => new SelectListItem
+                        {
+                            Text = d.Model,
+                            Value = d.Id.ToString()
+                        }).ToList();
+
+                        var viewModel = new EmployeeCreateModel
+                        {
+                            Employee = employee,
+                            Departments = department,
+                            IsSupervisor = isSupervisor,
+                            Computers = computers
+                        };
+                        reader.Close();
+                        return View(viewModel);
+                    }
+                    reader.Close();
+                    return NotFound();
+                }
+            }
         }
 
         // POST: Employees/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, Employee employee )
         {
             try
             {
-                // TODO: Add update logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"UPDATE Employee
+                                            SET FirstName = @firstName, 
+                                                LastName = @lastName, 
+                                                DepartmentId = @departmentId,
+                                                Email = @email,
+                                                IsSupervisor = @isSupervisor,
+                                                ComputerId = @computerId
+                                            WHERE Id = @id";
+
+                        cmd.Parameters.Add(new SqlParameter("@firstName", employee.FirstName));
+                        cmd.Parameters.Add(new SqlParameter("@lastName", employee.LastName));
+                        cmd.Parameters.Add(new SqlParameter("@departmentId", employee.DepartmentId));
+                        cmd.Parameters.Add(new SqlParameter("@email", employee.Email));
+                        cmd.Parameters.Add(new SqlParameter("@isSupervisor", employee.IsSupervisor));
+                        cmd.Parameters.Add(new SqlParameter("@computerId", employee.ComputerId));
+                        cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        /*if (rowsAffected > 0)
+                        {
+                            return new StatusCodeResult(StatusCodes.Status204NoContent);
+                        }
+                        return BadRequest($"No Employee with Id of {id}");*/
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                //return View();
+                return RedirectToAction(nameof(Edit), new { id = id });
             }
         }
 
@@ -279,7 +370,7 @@ namespace Bangazon_RedJags.Controllers
             return list;
         }
 
-        private List<Computer> GetComputers()
+        private List<Computer> GetComputers(int id)
         {
             using (SqlConnection conn = Connection)
             {
@@ -296,6 +387,11 @@ namespace Bangazon_RedJags.Controllers
                     var reader = cmd.ExecuteReader();
 
                     var computers = new List<Computer>();
+
+                    if( id > 0 )
+                    {
+                        computers.Add( GetComputer( id ) );
+                    }
 
                     while (reader.Read())
                     {
@@ -316,12 +412,50 @@ namespace Bangazon_RedJags.Controllers
                             computers.Add(computer);
                         }
                     }
+                    reader.Close();
 
                     return computers;
                 }
             }
         }
 
+        private Computer GetComputer(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Model
+                                            FROM Computer
+                                            WHERE Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+
+                    //Computer computer = new Computer();
+
+                    //while (reader.Read())
+                    //{
+                    reader.Read();
+                        Computer computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Model = reader.GetString(reader.GetOrdinal("Model"))
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        {
+                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                        }
+                    //}
+                    reader.Close();
+                    return computer;
+                }
+            }
+        }
 
     }
 }
