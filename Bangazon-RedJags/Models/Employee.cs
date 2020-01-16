@@ -32,5 +32,8 @@ namespace Bangazon_RedJags.Models
         public int ComputerId { get; set; }
 
         //public Computer? Computer { get; set; }
+
+        
+       
     }
 }

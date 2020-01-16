@@ -80,7 +80,61 @@ namespace Bangazon_RedJags.Controllers
         // GET: Departments/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT d.Name, d.Budget, d.Id, e.firstName, e.lastName, e.Id as EmployeeId
+                                        FROM Department d
+                                        LEFT JOIN Employee e ON e.DepartmentId = d.Id
+                                        WHERE d.Id = @id";
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    var reader = cmd.ExecuteReader();
+
+                    Department department = null;
+
+                    while (reader.Read())
+                    {
+                        if (department == null)
+                        {
+                            department = new Department
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Budget = reader.GetInt32(reader.GetOrdinal("Budget"))
+
+                            };
+                        }
+
+                        var hasEmployee = !reader.IsDBNull(reader.GetOrdinal("EmployeeId"));
+
+                        if (hasEmployee)
+                        {
+                            var firstname = reader.GetString(reader.GetOrdinal("FirstName"));
+                            var lastname =  reader.GetString(reader.GetOrdinal("LastName"));
+                            department.Employees.Add(new BasicEmployee
+                            {
+                              FullName = ($"{firstname} {lastname}")
+                                
+                            });
+                        }
+
+
+
+                    }
+
+                    if (department == null)
+                    {
+                        return NotFound();
+                    }
+                    reader.Close();
+                    return View(department);
+
+                }
+            }
+            
         }
 
         // GET: Departments/Create
@@ -92,11 +146,24 @@ namespace Bangazon_RedJags.Controllers
         // POST: Departments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(Department department)
         {
             try
             {
-                // TODO: Add insert logic here
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO Department (Name, Budget) 
+                                            VALUES (@name, @budget)";
+
+                        cmd.Parameters.Add(new SqlParameter("@name", department.Name));
+                        cmd.Parameters.Add(new SqlParameter("@budget", department.Budget));
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
