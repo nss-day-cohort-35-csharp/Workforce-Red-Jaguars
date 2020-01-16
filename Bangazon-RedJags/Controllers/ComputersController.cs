@@ -27,7 +27,7 @@ namespace Bangazon_RedJags.Controllers
             }
         }
         // GET: Computers
-        public ActionResult Index()
+        public ActionResult Index(string search)
         {
             using (SqlConnection conn = Connection)
             {
@@ -35,6 +35,11 @@ namespace Bangazon_RedJags.Controllers
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Model FROM Computer";
+                    if (!string.IsNullOrWhiteSpace(search))
+                    {
+                        cmd.CommandText += @" WHERE Make LIKE @searchString OR Model LIKE @searchString";
+                    }
+                    cmd.Parameters.Add(new SqlParameter("@searchString", "%" + search + "%"));
 
                     var reader = cmd.ExecuteReader();
 
