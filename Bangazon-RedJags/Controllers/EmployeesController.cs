@@ -322,6 +322,47 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+            //helper function to grab all training programs
+        private List<TrainingProgram> GetAllTrainingPrograms()
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"SELECT Id, [Name], StartDate, EndDate, MaxAttendees 
+                                        FROM TrainingProgram
+                                        WHERE StartDate >= @today";
+                        //
+                        cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
 
-    }
+                        int IdOrdinal = reader.GetOrdinal("Id");
+                        int NameOrdinal = reader.GetOrdinal("Name");
+                        int StartDateOrdinal = reader.GetOrdinal("StartDate");
+                        int EndDateOrdinal = reader.GetOrdinal("EndDate");
+                        int MaxAttendeesOrdinal = reader.GetOrdinal("MaxAttendees");
+
+                        while (reader.Read())
+                        {
+                            TrainingProgram trainingProgram = new TrainingProgram
+                            {
+                                Id = reader.GetInt32(IdOrdinal),
+                                Name = reader.GetString(NameOrdinal),
+                                StartDate = reader.GetDateTime(StartDateOrdinal),
+                                EndDate = reader.GetDateTime(EndDateOrdinal),
+                                MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
+                            };
+
+                            trainingPrograms.Add(trainingProgram);
+                        }
+                        reader.Close();
+
+                        return trainingPrograms;
+                    }
+                }
+            }
+
+        }
 }
