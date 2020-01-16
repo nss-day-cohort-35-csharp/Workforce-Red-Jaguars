@@ -71,7 +71,61 @@ namespace Bangazon_RedJags.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                        SELECT e.Id, e.FirstName, e.LastName, d.Name AS DepartmentName,
+                                c.Make, c.Model, tp.Name AS TrainingName
+                        FROM Employee e
+                        LEFT JOIN Computer c ON ComputerId = c.Id
+                        LEFT JOIN Department d ON e.DepartmentId = d.Id
+                        LEFT JOIN EmployeeTraining et ON et.EmployeeId = e.id
+                        LEFT JOIN TrainingProgram tp ON et.TrainingProgramId = tp.Id
+                        
+                        WHERE e.Id = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    BasicEmployee employee = null;
+
+                    while (reader.Read())
+                    {
+                        if (employee == null)
+                        {
+
+
+                            employee = new BasicEmployee
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                                LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                                DepartmentName = reader.GetString(reader.GetOrdinal("DepartmentName")),
+                                Computer = reader.GetString(reader.GetOrdinal("Make")) + " " + reader.GetString(reader.GetOrdinal("Model")),
+                            };
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("TrainingName")))
+                            {
+                                employee.EmployeeTrainings.Add(reader.GetString(reader.GetOrdinal("TrainingName")));
+                            }                 
+                         } 
+                        else if (!reader.IsDBNull(reader.GetOrdinal("TrainingName")))
+                        {
+                            employee.EmployeeTrainings.Add(reader.GetString(reader.GetOrdinal("TrainingName")));
+                        }
+                    }
+                    reader.Close();
+
+                    if (employee == null)
+                    {
+                        return NotFound($"No Employee found with the ID of {id}");
+                    }
+                    return View(employee);
+                }
+            }
         }
 
         // GET: Employees/Create
