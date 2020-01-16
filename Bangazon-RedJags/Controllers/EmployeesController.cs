@@ -143,7 +143,7 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            var computers = GetComputers().Select(d => new SelectListItem
+            var computers = GetComputers(-1).Select(d => new SelectListItem
             {
                 Text = d.Make,
                 Value = d.Id.ToString()
@@ -210,7 +210,7 @@ namespace Bangazon_RedJags.Controllers
                 Value = d.ToString()
             }).ToList();
 
-            var computers = GetComputers().Select(d => new SelectListItem
+            var computers = GetComputers(id).Select(d => new SelectListItem
             {
                 Text = d.Make,
                 Value = d.Id.ToString()
@@ -369,7 +369,7 @@ namespace Bangazon_RedJags.Controllers
             return list;
         }
 
-        private List<Computer> GetComputers()
+        private List<Computer> GetComputers(int id)
         {
             using (SqlConnection conn = Connection)
             {
@@ -386,6 +386,11 @@ namespace Bangazon_RedJags.Controllers
                     var reader = cmd.ExecuteReader();
 
                     var computers = new List<Computer>();
+
+                    if(id != -1 )
+                    {
+                        computers.Add( GetComputer( id ) );
+                    }
 
                     while (reader.Read())
                     {
@@ -412,6 +417,40 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+        private Computer GetComputer(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, PurchaseDate, DecomissionDate, Make, Model
+                                            FROM Computer
+                                            WHERE Id = id";
+
+                    var reader = cmd.ExecuteReader();
+
+                    Computer computer = new Computer();
+
+                    while (reader.Read())
+                    {
+                        computer = new Computer
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                            Make = reader.GetString(reader.GetOrdinal("Make")),
+                            Model = reader.GetString(reader.GetOrdinal("Model"))
+                        };
+                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                        {
+                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                        }
+                    }
+                    reader.Close();
+                    return computer;
+                }
+            }
+        }
 
     }
 }
