@@ -426,7 +426,7 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
-<<<<<<< HEAD
+
             //helper function to grab all training programs
         private List<TrainingProgram> GetAllTrainingPrograms()
             {
@@ -459,7 +459,17 @@ namespace Bangazon_RedJags.Controllers
                                 EndDate = reader.GetDateTime(EndDateOrdinal),
                                 MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
                             };
-=======
+
+
+                            trainingPrograms.Add(trainingProgram);
+                        }
+                        reader.Close();
+
+                        return trainingPrograms;
+                    }
+                }
+            }
+
         private Computer GetComputer(int id)
         {
             using (SqlConnection conn = Connection)
@@ -480,33 +490,23 @@ namespace Bangazon_RedJags.Controllers
                     //while (reader.Read())
                     //{
                     reader.Read();
-                        Computer computer = new Computer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            Make = reader.GetString(reader.GetOrdinal("Make")),
-                            Model = reader.GetString(reader.GetOrdinal("Model"))
-                        };
-                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
-                        {
-                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
-                        }
+                    Computer computer = new Computer
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                        Make = reader.GetString(reader.GetOrdinal("Make")),
+                        Model = reader.GetString(reader.GetOrdinal("Model"))
+                    };
+                    if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                    {
+                        computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                    }
                     //}
                     reader.Close();
                     return computer;
                 }
             }
         }
->>>>>>> master
 
-                            trainingPrograms.Add(trainingProgram);
-                        }
-                        reader.Close();
-
-                        return trainingPrograms;
-                    }
-                }
-            }
-
-        }
+    }
 }
