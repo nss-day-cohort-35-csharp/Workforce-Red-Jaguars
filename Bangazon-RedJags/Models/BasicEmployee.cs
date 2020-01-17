@@ -28,9 +28,10 @@ namespace Bangazon_RedJags.Models
 
         public List<String> EmployeeTrainings { get; set; } = new List<String>();
 
-        public List<SelectListItem> TrainingList { get; set; }
+        //public List<SelectListItem> TrainingList { get; set; }
 
-        //public List<TrainingSelect> TrainingList { get; set; }
+        public List<TrainingSelect> TrainingList { get; set; }
+
         
     }
 }

@@ -71,10 +71,11 @@ namespace Bangazon_RedJags.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
-            var trainings = GetAllTrainingPrograms().Select(p => new SelectListItem
+            var trainings = GetAllTrainingPrograms().Select(p => new TrainingSelect
             {
-                Text = p.Name,
-                Value = p.Id.ToString()
+                Name = p.Name,
+                Id = p.Id,
+                isSelected = false
             }).ToList();
 
             using (SqlConnection conn = Connection)
@@ -129,7 +130,17 @@ namespace Bangazon_RedJags.Controllers
                     {
                         return NotFound($"No Employee found with the ID of {id}");
                     }
+                    foreach (TrainingSelect training in trainings)
+                    {
+                        if (employee.EmployeeTrainings.Any(e => e == training.Name))
+                        {
+                            training.isSelected = true;
+                        }
+                    }
+
                     employee.TrainingList = trainings;
+
+
                     return View(employee);
                 }
             }

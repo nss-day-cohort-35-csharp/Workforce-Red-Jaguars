@@ -39,34 +39,18 @@
     </dl>
 </div>
 <h4>Employee Training</h4>
-<table class="table">
-    
-    <tbody>
-        @foreach (var item in Model.EmployeeTrainings)
+
+<form asp-action="EditTraining" asp-controller="Employee">
+    <ul>
+        @for (var i = 0; i < Model.TrainingList.Count; i++)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item) 
-                </td>
-
-
-                @*<td>
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-                    </td>*@
-            </tr>
+            <li>
+                <input type="checkbox" asp-for="@Model.TrainingList[i].isSelected" />
+                <label asp-for="@Model.TrainingList[i].isSelected">@Model.TrainingList[i].Name</label>
+                <input type="hidden" asp-for="@Model.TrainingList[i].Id" />
+                <input type="hidden" asp-for="@Model.TrainingList[i].Name" />
+            </li>
         }
-</table>
-
-<div>
-    <p>Edit Training Programs</p>
-    <div class="form-group">
-
-        <select multiple asp-for="@Model.EmployeeTrainings" asp-items="@Model.TrainingList"></select>
-    </div>
-</div>
-<div>
-    @Html.ActionLink("Edit", "Edit", new {  id = Model.Id  }) |
-    <a asp-action="Index">Back to List</a>
-</div>
+    </ul>
+    <button type="submit" name="action">Update</button>
+</form>
