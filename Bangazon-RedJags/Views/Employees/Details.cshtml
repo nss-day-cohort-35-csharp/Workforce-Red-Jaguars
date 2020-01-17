@@ -59,6 +59,7 @@
         }
 </table>
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    @*@Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |*@
+    @Html.ActionLink("Assign", "Assign", new { id = Model.Id, firstName = Model.FirstName, lastName = Model.LastName }) |
     <a asp-action="Index">Back to List</a>
 </div>

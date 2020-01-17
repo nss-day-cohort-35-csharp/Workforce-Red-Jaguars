@@ -1,0 +1,65 @@
+﻿@model Bangazon_RedJags.Models.ViewModels.EmployeeProgramsModel
+
+@{
+    ViewData["Title"] = "Assign";
+}
+
+<h1>Assign</h1>
+
+<h4>EmployeeProgramsModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Assign">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input asp-for="Id" class="form-control" type="hidden" />
+
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div>
+                <h4>Employee Training</h4>
+                <table class="table">
+                    <tbody>
+                        @foreach (var item in Model.AssignedPrograms)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Text)
+                                </td>
+                            </tr>
+                        }
+                </table>
+            </div>
+
+            <input asp-for="AssignedPrograms" class="form-control" type="hidden" />
+
+            <div class="form-group">
+                <label asp-for="ProgramId" class="control-label"></label>
+                @*<input asp-for="DepartmentId" class="form-control" />*@
+                <select asp-for="ProgramId" asp-items="@Model.EligiblePrograms"></select>
+                @*<span asp-validation-for="DepartmentId" class="text-danger"></span>*@
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

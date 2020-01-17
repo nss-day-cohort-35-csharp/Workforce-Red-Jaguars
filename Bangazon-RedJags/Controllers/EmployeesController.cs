@@ -110,8 +110,8 @@ namespace Bangazon_RedJags.Controllers
                             if (!reader.IsDBNull(reader.GetOrdinal("TrainingName")))
                             {
                                 employee.EmployeeTrainings.Add(reader.GetString(reader.GetOrdinal("TrainingName")));
-                            }                 
-                         } 
+                            }
+                        }
                         else if (!reader.IsDBNull(reader.GetOrdinal("TrainingName")))
                         {
                             employee.EmployeeTrainings.Add(reader.GetString(reader.GetOrdinal("TrainingName")));
@@ -262,7 +262,7 @@ namespace Bangazon_RedJags.Controllers
         // POST: Employees/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, Employee employee )
+        public ActionResult Edit(int id, Employee employee)
         {
             try
             {
@@ -289,23 +289,134 @@ namespace Bangazon_RedJags.Controllers
                         cmd.Parameters.Add(new SqlParameter("@id", id));
 
                         int rowsAffected = cmd.ExecuteNonQuery();
-
-                        /*if (rowsAffected > 0)
-                        {
-                            return new StatusCodeResult(StatusCodes.Status204NoContent);
-                        }
-                        return BadRequest($"No Employee with Id of {id}");*/
                     }
                 }
-
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                //return View();
                 return RedirectToAction(nameof(Edit), new { id = id });
             }
         }
+        // GET: Employees/Assign/5
+        public ActionResult Assign(int id, string firstName, string lastName)
+        {
+            var assignedPrograms = GetAssignedPrograms(id).Select(d => new SelectListItem
+            {
+                Text = d.Name,
+                Value = d.Id.ToString()
+            }).ToList();
+
+            var eligiblePrograms = GetEligiblePrograms().Select(d => new SelectListItem
+            {
+                Text = d.Name,
+                Value = d.Id.ToString()
+            }).ToList();
+
+            var viewModel = new EmployeeProgramsModel
+            {
+                Id = id,
+                FirstName = firstName,
+                LastName = lastName,
+                AssignedPrograms = assignedPrograms,
+                EligiblePrograms = eligiblePrograms
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Employees/Assign/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Assign(int id, EmployeeProgramsModel info)
+        {
+            var assignedPrograms = GetAssignedPrograms(id).Select(d => new SelectListItem
+            {
+                Text = d.Name,
+                Value = d.Id.ToString()
+            }).ToList();
+
+            try
+            {
+                if (ContainsValue(assignedPrograms, info.ProgramId.ToString()))
+                {
+                    DeleteProgram(id, info.ProgramId);
+                }
+                else
+                {
+                    AddProgram(id, info.ProgramId);
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        private bool ContainsValue(List<SelectListItem> assigned, string id)
+        {
+            var contains = assigned.Where(i => i.Value.Equals(id)).ToList();
+
+            if (contains.Count() == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private ActionResult DeleteProgram(int employeeId, int programId)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE FROM EmployeeTraining WHERE EmployeeId = @employeeId AND TrainingProgramId = @programId";
+                        cmd.Parameters.Add(new SqlParameter("@employeeId", employeeId));
+                        cmd.Parameters.Add(new SqlParameter("@programId", programId));
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        private ActionResult AddProgram(int employeeId, int programId)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"INSERT INTO EmployeeTraining (EmployeeId, TrainingProgramId )
+                                            VALUES (@employeeId, @programId)";
+
+                        cmd.Parameters.Add(new SqlParameter("@employeeId", employeeId));
+                        cmd.Parameters.Add(new SqlParameter("@programId", programId));
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
 
         // GET: Employees/Delete/5
         public ActionResult Delete(int id)
@@ -320,7 +431,6 @@ namespace Bangazon_RedJags.Controllers
         {
             try
             {
-                // TODO: Add delete logic here
 
                 return RedirectToAction(nameof(Index));
             }
@@ -329,9 +439,7 @@ namespace Bangazon_RedJags.Controllers
                 return View();
             }
         }
-        //
-        //
-        //
+
         private List<Department> GetDepartments()
         {
             using (SqlConnection conn = Connection)
@@ -377,7 +485,6 @@ namespace Bangazon_RedJags.Controllers
                 conn.Open();
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    //INSERT INTO Computer(PurchaseDate,DecomissionDate,Make,Model)
                     cmd.CommandText = @"SELECT c.Id, c.PurchaseDate, c.DecomissionDate, c.Make, c.Model
                                             FROM Computer c
                                             LEFT JOIN Employee e
@@ -388,9 +495,9 @@ namespace Bangazon_RedJags.Controllers
 
                     var computers = new List<Computer>();
 
-                    if( id > 0 )
+                    if (id > 0)
                     {
-                        computers.Add( GetComputer( id ) );
+                        computers.Add(GetComputer(id));
                     }
 
                     while (reader.Read())
@@ -434,28 +541,109 @@ namespace Bangazon_RedJags.Controllers
 
                     var reader = cmd.ExecuteReader();
 
-                    //Computer computer = new Computer();
-
-                    //while (reader.Read())
-                    //{
                     reader.Read();
-                        Computer computer = new Computer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            Make = reader.GetString(reader.GetOrdinal("Make")),
-                            Model = reader.GetString(reader.GetOrdinal("Model"))
-                        };
-                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
-                        {
-                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
-                        }
-                    //}
+                    Computer computer = new Computer
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                        Make = reader.GetString(reader.GetOrdinal("Make")),
+                        Model = reader.GetString(reader.GetOrdinal("Model"))
+                    };
+                    if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                    {
+                        computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                    }
                     reader.Close();
                     return computer;
                 }
             }
         }
 
+        private List<TrainingProgram> GetAssignedPrograms(int id)
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT tp.Id, [Name], StartDate, EndDate, MaxAttendees, et.EmployeeId 
+                                        FROM TrainingProgram tp
+                                        LEFT JOIN EmployeeTraining et
+                                            ON tp.Id = et.TrainingProgramId
+                                        WHERE et.EmployeeId = @id";
+
+                    cmd.Parameters.Add(new SqlParameter("@id", id));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
+
+                    int IdOrdinal = reader.GetOrdinal("Id");
+                    int NameOrdinal = reader.GetOrdinal("Name");
+                    int StartDateOrdinal = reader.GetOrdinal("StartDate");
+                    int EndDateOrdinal = reader.GetOrdinal("EndDate");
+                    int MaxAttendeesOrdinal = reader.GetOrdinal("MaxAttendees");
+
+                    while (reader.Read())
+                    {
+                        TrainingProgram trainingProgram = new TrainingProgram
+                        {
+                            Id = reader.GetInt32(IdOrdinal),
+                            Name = reader.GetString(NameOrdinal),
+                            StartDate = reader.GetDateTime(StartDateOrdinal),
+                            EndDate = reader.GetDateTime(EndDateOrdinal),
+                            MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
+                        };
+
+                        trainingPrograms.Add(trainingProgram);
+                    }
+                    reader.Close();
+
+                    return trainingPrograms;
+                }
+            }
+        }
+
+
+        private List<TrainingProgram> GetEligiblePrograms()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT Id, [Name], StartDate, EndDate, MaxAttendees 
+                                        FROM TrainingProgram
+                                        WHERE StartDate >= @today";
+
+                    cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
+
+                    int IdOrdinal = reader.GetOrdinal("Id");
+                    int NameOrdinal = reader.GetOrdinal("Name");
+                    int StartDateOrdinal = reader.GetOrdinal("StartDate");
+                    int EndDateOrdinal = reader.GetOrdinal("EndDate");
+                    int MaxAttendeesOrdinal = reader.GetOrdinal("MaxAttendees");
+
+                    while (reader.Read())
+                    {
+                        TrainingProgram trainingProgram = new TrainingProgram
+                        {
+                            Id = reader.GetInt32(IdOrdinal),
+                            Name = reader.GetString(NameOrdinal),
+                            StartDate = reader.GetDateTime(StartDateOrdinal),
+                            EndDate = reader.GetDateTime(EndDateOrdinal),
+                            MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
+                        };
+
+                        trainingPrograms.Add(trainingProgram);
+                    }
+                    reader.Close();
+
+                    return trainingPrograms;
+                }
+            }
+        }
     }
 }
