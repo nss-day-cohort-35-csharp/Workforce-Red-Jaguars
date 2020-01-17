@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -26,5 +27,11 @@ namespace Bangazon_RedJags.Models
         public string Computer { get; set; }
 
         public List<String> EmployeeTrainings { get; set; } = new List<String>();
+
+        //public List<SelectListItem> TrainingList { get; set; }
+
+        public List<TrainingSelect> TrainingList { get; set; }
+
+        
     }
 }

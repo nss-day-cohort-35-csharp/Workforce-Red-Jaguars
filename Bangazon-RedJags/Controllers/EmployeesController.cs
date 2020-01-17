@@ -71,6 +71,13 @@ namespace Bangazon_RedJags.Controllers
         // GET: Employees/Details/5
         public ActionResult Details(int id)
         {
+            var trainings = GetAllTrainingPrograms().Select(p => new TrainingSelect
+            {
+                Name = p.Name,
+                Id = p.Id,
+                isSelected = false
+            }).ToList();
+
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
@@ -123,6 +130,17 @@ namespace Bangazon_RedJags.Controllers
                     {
                         return NotFound($"No Employee found with the ID of {id}");
                     }
+                    foreach (TrainingSelect training in trainings)
+                    {
+                        if (employee.EmployeeTrainings.Any(e => e == training.Name))
+                        {
+                            training.isSelected = true;
+                        }
+                    }
+
+                    employee.TrainingList = trainings;
+
+
                     return View(employee);
                 }
             }
@@ -307,6 +325,50 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+        // POST: Employees/EditTraining/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditTraining(int id, BasicEmployee employee)
+        {
+            try
+            {
+                DeleteAllUpcomingTrianing(id);
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        foreach (TrainingSelect training in employee.TrainingList)
+                            {
+                               if (training.isSelected)
+                            {
+                                cmd.CommandText = @"INSERT INTO EmployeeTraining (TrainingProgramId, EmployeeId)
+                                            OUTPUT INSERTED.id
+                                            VALUES (@trainigProgramId, @employeeId)";
+
+                                cmd.Parameters.Add(new SqlParameter("@trainigProgramId", training.Id));
+                                cmd.Parameters.Add(new SqlParameter("@employeeId", employee.Id));
+
+
+                                
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+
+                            }
+                            
+                        }
+                    }
+                }
+
+                // RedirectToAction("Index");
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         // GET: Employees/Delete/5
         public ActionResult Delete(int id)
         {
@@ -419,6 +481,50 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+
+            //helper function to grab all training programs
+        private List<TrainingProgram> GetAllTrainingPrograms()
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"SELECT Id, [Name], StartDate, EndDate, MaxAttendees 
+                                        FROM TrainingProgram
+                                        WHERE StartDate >= @today";
+                        //
+                        cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+                        SqlDataReader reader = cmd.ExecuteReader();
+                        List<TrainingProgram> trainingPrograms = new List<TrainingProgram>();
+
+                        int IdOrdinal = reader.GetOrdinal("Id");
+                        int NameOrdinal = reader.GetOrdinal("Name");
+                        int StartDateOrdinal = reader.GetOrdinal("StartDate");
+                        int EndDateOrdinal = reader.GetOrdinal("EndDate");
+                        int MaxAttendeesOrdinal = reader.GetOrdinal("MaxAttendees");
+
+                        while (reader.Read())
+                        {
+                            TrainingProgram trainingProgram = new TrainingProgram
+                            {
+                                Id = reader.GetInt32(IdOrdinal),
+                                Name = reader.GetString(NameOrdinal),
+                                StartDate = reader.GetDateTime(StartDateOrdinal),
+                                EndDate = reader.GetDateTime(EndDateOrdinal),
+                                MaxAttendees = reader.GetInt32(MaxAttendeesOrdinal)
+                            };
+
+
+                            trainingPrograms.Add(trainingProgram);
+                        }
+                        reader.Close();
+
+                        return trainingPrograms;
+                    }
+                }
+            }
+
         private Computer GetComputer(int id)
         {
             using (SqlConnection conn = Connection)
@@ -439,21 +545,50 @@ namespace Bangazon_RedJags.Controllers
                     //while (reader.Read())
                     //{
                     reader.Read();
-                        Computer computer = new Computer
-                        {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
-                            Make = reader.GetString(reader.GetOrdinal("Make")),
-                            Model = reader.GetString(reader.GetOrdinal("Model"))
-                        };
-                        if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
-                        {
-                            computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
-                        }
+                    Computer computer = new Computer
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        PurchaseDate = reader.GetDateTime(reader.GetOrdinal("PurchaseDate")),
+                        Make = reader.GetString(reader.GetOrdinal("Make")),
+                        Model = reader.GetString(reader.GetOrdinal("Model"))
+                    };
+                    if (!reader.IsDBNull(reader.GetOrdinal("DecomissionDate")))
+                    {
+                        computer.DecomissionDate = reader.GetDateTime(reader.GetOrdinal("DecomissionDate"));
+                    }
                     //}
                     reader.Close();
                     return computer;
                 }
+            }
+        }
+
+        //helper function to delete all upcoming trainings for employee
+        private void DeleteAllUpcomingTrianing(int id)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE et FROM EmployeeTraining et
+                                            LEFT JOIN TrainingProgram tp ON tp.Id = et.TrainingProgramId
+                                            WHERE EmployeeId = @eId AND StartDate >= @today";
+                        cmd.Parameters.Add(new SqlParameter("@eId", id));
+                        cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+
+                        cmd.ExecuteNonQuery();
+                        
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+                
             }
         }
 
