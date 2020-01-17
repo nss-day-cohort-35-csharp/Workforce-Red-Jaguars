@@ -325,6 +325,50 @@ namespace Bangazon_RedJags.Controllers
             }
         }
 
+        // POST: Employees/EditTraining/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditTraining(int id, BasicEmployee employee)
+        {
+            try
+            {
+                DeleteAllUpcomingTrianing(id);
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        foreach (TrainingSelect training in employee.TrainingList)
+                            {
+                               if (training.isSelected)
+                            {
+                                cmd.CommandText = @"INSERT INTO EmployeeTraining (TrainingProgramId, EmployeeId)
+                                            OUTPUT INSERTED.id
+                                            VALUES (@trainigProgramId, @employeeId)";
+
+                                cmd.Parameters.Add(new SqlParameter("@trainigProgramId", training.Id));
+                                cmd.Parameters.Add(new SqlParameter("@employeeId", employee.Id));
+
+
+                                
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear();
+
+                            }
+                            
+                        }
+                    }
+                }
+
+                // RedirectToAction("Index");
+                return RedirectToAction(nameof(Details), new { id = id });
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
         // GET: Employees/Delete/5
         public ActionResult Delete(int id)
         {
@@ -516,6 +560,35 @@ namespace Bangazon_RedJags.Controllers
                     reader.Close();
                     return computer;
                 }
+            }
+        }
+
+        //helper function to delete all upcoming trainings for employee
+        private void DeleteAllUpcomingTrianing(int id)
+        {
+            try
+            {
+                using (SqlConnection conn = Connection)
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = @"DELETE et FROM EmployeeTraining et
+                                            LEFT JOIN TrainingProgram tp ON tp.Id = et.TrainingProgramId
+                                            WHERE EmployeeId = @eId AND StartDate >= @today";
+                        cmd.Parameters.Add(new SqlParameter("@eId", id));
+                        cmd.Parameters.Add(new SqlParameter("@today", DateTime.Now));
+
+                        cmd.ExecuteNonQuery();
+                        
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+                
             }
         }
 
